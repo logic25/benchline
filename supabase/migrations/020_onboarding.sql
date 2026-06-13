@@ -14,7 +14,11 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN NOT NULL DEFAULT FALSE,
   ADD COLUMN IF NOT EXISTS onboarding_step INT NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS payment_method_setup BOOLEAN NOT NULL DEFAULT FALSE,
-  ADD COLUMN IF NOT EXISTS stripe_connect_onboarded BOOLEAN NOT NULL DEFAULT FALSE;
+  ADD COLUMN IF NOT EXISTS stripe_connect_onboarded BOOLEAN NOT NULL DEFAULT FALSE,
+  -- Admin moderation: a suspended user is blocked from posting/claiming. Read by
+  -- the onboarding gate; the column is admin-managed (no self-update path).
+  ADD COLUMN IF NOT EXISTS suspended BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMPTZ;
 
 -- Existing users predate onboarding; treat them as already onboarded so the
 -- gate does not lock anyone out on deploy. New signups default to FALSE above.

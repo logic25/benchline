@@ -116,6 +116,8 @@ export interface Profile {
   onboarding_step: number;
   payment_method_setup: boolean;
   stripe_connect_onboarded: boolean;
+  suspended: boolean;
+  suspended_at: string | null;
   rating_avg: number;
   rating_count: number;
   created_at: string;

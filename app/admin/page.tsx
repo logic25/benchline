@@ -3,6 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 
 export const dynamic = 'force-dynamic';
 
+function hoursAgo(h: number): string {
+  return new Date(new Date().getTime() - h * 60 * 60 * 1000).toISOString();
+}
+
 function startOf(period: 'day' | 'week' | 'month'): string {
   const now = new Date();
   if (period === 'day') {
@@ -62,7 +66,7 @@ export default async function AdminOverviewPage() {
   const dayStart = startOf('day');
   const weekStart = startOf('week');
   const monthStart = startOf('month');
-  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const dayAgo = hoursAgo(24);
 
   const [
     barPending,
