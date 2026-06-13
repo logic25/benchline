@@ -2,6 +2,7 @@ import {
   BedrockRuntimeClient,
   InvokeModelCommand,
 } from '@aws-sdk/client-bedrock-runtime';
+import * as Sentry from '@sentry/nextjs';
 
 // AWS Bedrock client for LLM calls. Bedrock is used instead of the public
 // Anthropic API so report data is processed under AWS's zero-data-retention
@@ -25,22 +26,29 @@ function getClient(): BedrockRuntimeClient {
 // Invoke Claude on Bedrock with a single user prompt and return the text. Throws
 // if the response cannot be parsed.
 export async function invokeClaude(prompt: string, maxTokens: number = 1024): Promise<string> {
-  const command = new InvokeModelCommand({
-    modelId: BEDROCK_MODEL,
-    contentType: 'application/json',
-    accept: 'application/json',
-    body: JSON.stringify({
-      anthropic_version: 'bedrock-2023-05-31',
-      max_tokens: maxTokens,
-      messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }],
-    }),
-  });
+  // Span is a no-op when Sentry is unconfigured. We never attach the prompt
+  // (it may contain case data) — only the model id and token budget.
+  return Sentry.startSpan(
+    { op: 'ai.bedrock.invoke', name: 'Bedrock InvokeModel', attributes: { model: BEDROCK_MODEL, max_tokens: maxTokens } },
+    async () => {
+      const command = new InvokeModelCommand({
+        modelId: BEDROCK_MODEL,
+        contentType: 'application/json',
+        accept: 'application/json',
+        body: JSON.stringify({
+          anthropic_version: 'bedrock-2023-05-31',
+          max_tokens: maxTokens,
+          messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }],
+        }),
+      });
 
-  const response = await getClient().send(command);
-  const decoded = JSON.parse(new TextDecoder().decode(response.body));
-  const text = decoded?.content?.[0]?.text;
-  if (typeof text !== 'string') {
-    throw new Error('Unexpected Bedrock response shape');
-  }
-  return text;
+      const response = await getClient().send(command);
+      const decoded = JSON.parse(new TextDecoder().decode(response.body));
+      const text = decoded?.content?.[0]?.text;
+      if (typeof text !== 'string') {
+        throw new Error('Unexpected Bedrock response shape');
+      }
+      return text;
+    }
+  );
 }
