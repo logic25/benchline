@@ -84,6 +84,8 @@ export interface Profile {
   email: string;
   full_name: string;
   phone: string | null;
+  phone_verified: boolean;
+  phone_verified_at: string | null;
   role: UserRole;
   bar_number: string | null;
   bar_state: string | null;

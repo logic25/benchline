@@ -74,6 +74,17 @@ export const sendMessageSchema = z
   });
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 
+// E.164-ish phone number (a leading + and 7-15 digits).
+export const phoneSendCodeSchema = z.object({
+  phone: z.string().trim().regex(/^\+[1-9]\d{6,14}$/, 'Enter a phone number in international format, e.g. +12125550100'),
+});
+export type PhoneSendCodeInput = z.infer<typeof phoneSendCodeSchema>;
+
+export const phoneVerifyCodeSchema = z.object({
+  code: z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit code'),
+});
+export type PhoneVerifyCodeInput = z.infer<typeof phoneVerifyCodeSchema>;
+
 export const instantPayoutSchema = z.object({
   // Optional explicit amount (cents) to withdraw; defaults to full available
   // balance when omitted.

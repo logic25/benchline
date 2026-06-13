@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/insurance-expiry",
       "schedule": "17 6 * * *"
+    },
+    {
+      "path": "/api/cron/day-of-reminders",
+      "schedule": "23 11-15 * * *"
     }
   ]
 }
