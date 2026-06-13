@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { STATUS_COLORS } from '@/lib/constants';
-import { MapPin, Calendar, Gavel, FileText, Star } from 'lucide-react';
+import { MapPin, Calendar, Gavel, FileText, Star, CalendarPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Appearance, Profile, OutcomeReport, Review } from '@/lib/types';
 import Link from 'next/link';
@@ -351,6 +351,13 @@ export default function AppearanceDetailPage() {
               </Button>
             )}
             {isOwner && appearance.status === 'open' && <Button variant="outline" className="w-full" onClick={handleCancel}>Cancel Appearance</Button>}
+            {(isOwner || isClaimer) && appearance.status !== 'cancelled' && (
+              <a href={`/api/appearances/${appearance.id}/calendar.ics`} className="block">
+                <Button variant="outline" className="w-full">
+                  <CalendarPlus className="mr-2 h-4 w-4" />Add to calendar
+                </Button>
+              </a>
+            )}
           </div>
         </div>
       </div>
