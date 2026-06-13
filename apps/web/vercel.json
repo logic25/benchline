@@ -2,15 +2,15 @@
   "crons": [
     {
       "path": "/api/cron/auto-release",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/insurance-expiry",
       "schedule": "17 6 * * *"
     },
     {
+      "path": "/api/cron/insurance-expiry",
+      "schedule": "17 7 * * *"
+    },
+    {
       "path": "/api/cron/day-of-reminders",
-      "schedule": "23 11-15 * * *"
+      "schedule": "0 13 * * *"
     }
   ]
 }
