@@ -220,6 +220,14 @@ export interface Notification {
   created_at: string;
 }
 
+export interface ReferralClick {
+  id: string;
+  user_id: string | null;
+  partner: string;
+  source: string | null;
+  created_at: string;
+}
+
 export type DisputeStatus =
   | 'open'
   | 'in_review'
