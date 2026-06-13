@@ -1,5 +1,3 @@
-export const PLATFORM_FEE_RATE = 0.15;
-
 export const BOROUGHS: { value: string; label: string }[] = [
   { value: 'manhattan', label: 'Manhattan' },
   { value: 'brooklyn', label: 'Brooklyn' },
