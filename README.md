@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Benchline
 
-## Getting Started
+NYC per diem attorney marketplace — connecting solo litigators with NY-barred attorneys for court appearances.
 
-First, run the development server:
+## Monorepo Structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+benchline/
+├── apps/
+│   ├── web/          Main app (Next.js + Supabase + Stripe Connect)
+│   └── marketing/    Marketing site (benchline.co) — Next.js static export
+└── packages/         (reserved for shared brand tokens, legal copy, etc.)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Each app is independent. Install dependencies per workspace:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Main app
+cd apps/web
+npm install
+npm run dev          # http://localhost:3000
 
-## Learn More
+# Marketing site
+cd apps/marketing
+npm install
+npm run dev          # http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+Or use root workspace scripts:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev:web
+npm run dev:marketing
+npm run build:web
+npm run build:marketing
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+Both apps deploy to Vercel as two separate projects from this single repo:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| App           | Vercel Project        | Root Directory       | Domain                     |
+| ------------- | --------------------- | -------------------- | -------------------------- |
+| Main app      | `benchline-web`       | `apps/web`           | `app.benchline.co`         |
+| Marketing     | `benchline-marketing` | `apps/marketing`     | `benchline.co` / `www`     |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Each project is connected to this repo with a different **Root Directory** set in Vercel's project settings, so pushes to `master` trigger both deploys independently.
+
+## Phase Summaries
+
+See `PHASE_1_SUMMARY.md`, `PHASE_2_SUMMARY.md`, `PHASE_3_SUMMARY.md` for shipped work history.
+
+See `PRODUCT.md` for product vision and `AGENTS.md` for working agreements.
