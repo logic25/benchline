@@ -3,6 +3,7 @@ import { getStripe } from '@/lib/stripe/client';
 import { createClient } from '@/lib/supabase/server';
 import { computePlatformFee } from '@/lib/pricing';
 import { createPaymentIntentSchema } from '@/lib/validation/schemas';
+import { rateLimitGuard } from '@/lib/api/guard';
 
 // Pre-authorize the litigator's card at post time. The appearance is not yet
 // claimed, so we don't know the per diem's Connect account — we therefore use
@@ -24,6 +25,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   const { data: row } = await supabase
     .from('appearances')

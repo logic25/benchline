@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { sendMessageSchema } from '@/lib/validation/schemas';
 import { sendForNotification } from '@/lib/email/send-for-notification';
+import { rateLimitGuard } from '@/lib/api/guard';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -15,6 +16,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   // Confirm the sender is an involved party. The thread only exists once the
   // appearance is claimed; messaging an unclaimed appearance has no recipient.

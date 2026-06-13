@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { AppShell } from '@/components/layout/app-shell';
-import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,19 +11,12 @@ import { toast } from 'sonner';
 
 export default function AdminVerificationsPage() {
   const supabase = createClient();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [barRequests, setBarRequests] = useState<BarVerificationRequest[]>([]);
   const [insRequests, setInsRequests] = useState<InsuranceUpload[]>([]);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setIsAdmin(false); return; }
-    const { data: me } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
-    if (!me?.is_admin) { setIsAdmin(false); return; }
-    setIsAdmin(true);
-
     const { data: bars } = await supabase
       .from('bar_verification_requests')
       .select('*, user:profiles!bar_verification_requests_user_id_fkey(id, full_name, email)')
@@ -62,12 +53,12 @@ export default function AdminVerificationsPage() {
     }
   }
 
-  if (isAdmin === null) return <AppShell><div className="text-center py-12 text-muted-foreground">Loading…</div></AppShell>;
-  if (!isAdmin) return <AppShell><div className="text-center py-12 text-muted-foreground">Not authorized.</div></AppShell>;
-
   return (
-    <AppShell>
-      <Header title="Verification Review" description="Approve or reject bar and insurance submissions" />
+    <>
+      <div className="mb-6">
+        <h1 className="font-heading text-3xl tracking-[-0.02em]">Verification Review</h1>
+        <p className="text-sm text-muted-foreground">Approve or reject bar and insurance submissions.</p>
+      </div>
       <Tabs defaultValue="bar" className="max-w-3xl">
         <TabsList>
           <TabsTrigger value="bar">Bar ({barRequests.length})</TabsTrigger>
@@ -120,6 +111,6 @@ export default function AdminVerificationsPage() {
           ))}
         </TabsContent>
       </Tabs>
-    </AppShell>
+    </>
   );
 }

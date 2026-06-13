@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { insuranceSubmitSchema } from '@/lib/validation/schemas';
+import { rateLimitGuard } from '@/lib/api/guard';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -14,6 +15,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   if (new Date(expiresDate) <= new Date(effectiveDate)) {
     return NextResponse.json({ error: 'Expiration must be after the effective date' }, { status: 400 });

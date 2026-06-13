@@ -4,6 +4,8 @@ import { performTransition, TransitionError } from '@/lib/appearances/state-mach
 import { hasConflict } from '@/lib/conflict/check';
 import { claimSchema } from '@/lib/validation/schemas';
 import { sendForNotification } from '@/lib/email/send-for-notification';
+import { rateLimitGuard } from '@/lib/api/guard';
+import { requireOnboarding, REQUIREMENT_LABELS } from '@/lib/onboarding/required';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -17,6 +19,21 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
+
+  // Onboarding gate: a per diem must finish onboarding before claiming.
+  const onboarding = await requireOnboarding(user.id, 'claim');
+  if (!onboarding.ok) {
+    return NextResponse.json(
+      {
+        error: 'Finish onboarding before claiming appearances.',
+        missing: onboarding.missing.map((m) => REQUIREMENT_LABELS[m] ?? m),
+      },
+      { status: 403 }
+    );
+  }
 
   // The state machine runs under the service role (bypasses RLS), so the
   // verification gate must be enforced here in code, not only via RLS.

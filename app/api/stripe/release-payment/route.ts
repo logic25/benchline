@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service';
 import { releaseAppearancePayment } from '@/lib/stripe/release';
 import { TransitionError } from '@/lib/appearances/state-machine';
 import { releasePaymentSchema } from '@/lib/validation/schemas';
+import { rateLimitGuard } from '@/lib/api/guard';
 
 // Litigator-initiated release. Authenticates with the user session, verifies
 // ownership, then runs the shared release logic with the service-role client
@@ -19,6 +20,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   const { data: appearance } = await supabase
     .from('appearances')
