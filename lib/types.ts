@@ -12,6 +12,12 @@ export type OutcomeType = 'adjourned' | 'settled' | 'dismissed' | 'granted' | 'd
 
 export type NotificationType = 'appearance_posted' | 'appearance_claimed' | 'check_in' | 'report_submitted' | 'payment_released' | 'review_received';
 
+export type PaymentStatus = 'pending' | 'authorized' | 'captured' | 'released' | 'refunded' | 'disputed' | 'failed';
+
+export type FeeModel = 'flat' | 'percentage';
+
+export type PayoutStatus = 'pending' | 'in_transit' | 'paid' | 'failed' | 'canceled';
+
 export interface Profile {
   id: string;
   email: string;
@@ -49,7 +55,18 @@ export interface Appearance {
   appearance_type: AppearanceType;
   instructions: string;
   pay_rate: number;
-  platform_fee: number;
+  payment_status: PaymentStatus;
+  fee_model: FeeModel;
+  platform_fee_cents: number;
+  sales_tax_cents: number;
+  total_charged_cents: number | null;
+  payment_authorized_at: string | null;
+  payment_captured_at: string | null;
+  payment_released_at: string | null;
+  auto_release_at: string | null;
+  stripe_application_fee_amount: number | null;
+  stripe_transfer_id: string | null;
+  stripe_refund_id: string | null;
   stripe_payment_intent_id: string | null;
   claimed_at: string | null;
   completed_at: string | null;
@@ -58,6 +75,28 @@ export interface Appearance {
   poster?: Profile;
   claimer?: Profile;
   outcome_report?: OutcomeReport;
+}
+
+export interface Payout {
+  id: string;
+  user_id: string;
+  amount_cents: number;
+  fee_cents: number;
+  stripe_payout_id: string | null;
+  status: PayoutStatus;
+  created_at: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  appearance_id: string | null;
+  actor_user_id: string | null;
+  event_type: string;
+  from_status: string | null;
+  to_status: string | null;
+  payload: Record<string, unknown>;
+  stripe_event_id: string | null;
+  created_at: string;
 }
 
 export interface OutcomeReport {
