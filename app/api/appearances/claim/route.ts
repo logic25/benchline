@@ -20,12 +20,18 @@ export async function POST(request: NextRequest) {
   // verification gate must be enforced here in code, not only via RLS.
   const { data: claimer } = await supabase
     .from('profiles')
-    .select('bar_verification_status')
+    .select('bar_verification_status, insurance_status')
     .eq('id', user.id)
     .single();
   if (claimer?.bar_verification_status !== 'verified') {
     return NextResponse.json(
       { error: 'You must complete bar verification before claiming appearances.' },
+      { status: 403 }
+    );
+  }
+  if (claimer?.insurance_status !== 'verified') {
+    return NextResponse.json(
+      { error: 'You must have verified malpractice insurance on file before claiming appearances.' },
       { status: 403 }
     );
   }
