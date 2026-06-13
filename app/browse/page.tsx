@@ -33,7 +33,44 @@ export default function BrowsePage() {
       if (date) query = query.eq('appearance_date', date);
 
       const { data } = await query;
-      setAppearances(data || []);
+
+      // Hide appearances where the viewer has a conflict with opposing counsel:
+      // their own/firm bar numbers and name, or any declared conflict party.
+      const norm = (s: string | null | undefined) => (s ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+      const { data: { user } } = await supabase.auth.getUser();
+      let visible = data || [];
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, firm_name, firm_bar_numbers, bar_number')
+          .eq('id', user.id)
+          .single();
+        const { data: declarations } = await supabase
+          .from('conflict_declarations')
+          .select('conflicted_party_name, conflicted_party_firm, conflicted_party_bar_number')
+          .eq('user_id', user.id);
+
+        const ownBars = new Set(
+          [norm(profile?.bar_number), ...((profile?.firm_bar_numbers as string[] | null) ?? []).map(norm)].filter(Boolean)
+        );
+        const ownNames = new Set([norm(profile?.full_name)].filter(Boolean));
+        const ownFirms = new Set([norm(profile?.firm_name)].filter(Boolean));
+        const declBars = new Set((declarations ?? []).map((d) => norm(d.conflicted_party_bar_number)).filter(Boolean));
+        const declNames = new Set((declarations ?? []).map((d) => norm(d.conflicted_party_name)).filter(Boolean));
+        const declFirms = new Set((declarations ?? []).map((d) => norm(d.conflicted_party_firm)).filter(Boolean));
+
+        visible = visible.filter((a) => {
+          const oName = norm(a.opposing_counsel_name);
+          const oFirm = norm(a.opposing_counsel_firm);
+          const oBar = norm(a.opposing_counsel_bar_number);
+          if (oBar && (ownBars.has(oBar) || declBars.has(oBar))) return false;
+          if (oName && (ownNames.has(oName) || declNames.has(oName))) return false;
+          if (oFirm && (ownFirms.has(oFirm) || declFirms.has(oFirm))) return false;
+          return true;
+        });
+      }
+
+      setAppearances(visible);
       setLoading(false);
     }
     load();

@@ -26,6 +26,9 @@ export function PostForm() {
   const [caseCaption, setCaseCaption] = useState('');
   const [caseIndexNumber, setCaseIndexNumber] = useState('');
   const [appearanceType, setAppearanceType] = useState('');
+  const [opposingCounselName, setOpposingCounselName] = useState('');
+  const [opposingCounselFirm, setOpposingCounselFirm] = useState('');
+  const [opposingCounselBarNumber, setOpposingCounselBarNumber] = useState('');
   const [instructions, setInstructions] = useState('');
   const [payRate, setPayRate] = useState('');
   const [postedAppearanceId, setPostedAppearanceId] = useState<string | null>(null);
@@ -63,6 +66,9 @@ export function PostForm() {
           case_caption: caseCaption,
           case_index_number: caseIndexNumber,
           appearance_type: appearanceType,
+          opposing_counsel_name: opposingCounselName,
+          opposing_counsel_firm: opposingCounselFirm || null,
+          opposing_counsel_bar_number: opposingCounselBarNumber || null,
           instructions,
           pay_rate: payRateCents,
           status: 'open',
@@ -160,6 +166,21 @@ export function PostForm() {
           <div className="space-y-2">
             <Label>Index/Docket Number</Label>
             <Input placeholder="e.g. 123456/2024" value={caseIndexNumber} onChange={(e) => setCaseIndexNumber(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Opposing Counsel</Label>
+            <Input placeholder="Full name (required for conflict screening)" value={opposingCounselName} onChange={(e) => setOpposingCounselName(e.target.value)} required />
+            <p className="text-xs text-muted-foreground">Used to screen out per diem attorneys with a conflict of interest.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Opposing Counsel Firm</Label>
+              <Input placeholder="Optional" value={opposingCounselFirm} onChange={(e) => setOpposingCounselFirm(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Opposing Counsel Bar #</Label>
+              <Input placeholder="Optional" value={opposingCounselBarNumber} onChange={(e) => setOpposingCounselBarNumber(e.target.value)} />
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Instructions for Per Diem</Label>
