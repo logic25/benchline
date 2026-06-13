@@ -78,6 +78,12 @@ export interface ConflictDeclaration {
   created_at: string;
 }
 
+export type PaymentStatus = 'pending' | 'authorized' | 'captured' | 'released' | 'refunded' | 'disputed' | 'failed';
+
+export type FeeModel = 'flat' | 'percentage';
+
+export type PayoutStatus = 'pending' | 'in_transit' | 'paid' | 'failed' | 'canceled';
+
 export interface Profile {
   id: string;
   email: string;
