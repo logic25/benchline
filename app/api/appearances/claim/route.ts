@@ -16,6 +16,20 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // The state machine runs under the service role (bypasses RLS), so the
+  // verification gate must be enforced here in code, not only via RLS.
+  const { data: claimer } = await supabase
+    .from('profiles')
+    .select('bar_verification_status')
+    .eq('id', user.id)
+    .single();
+  if (claimer?.bar_verification_status !== 'verified') {
+    return NextResponse.json(
+      { error: 'You must complete bar verification before claiming appearances.' },
+      { status: 403 }
+    );
+  }
+
   // Pre-flight ownership/eligibility checks against the open row.
   const { data: appearance } = await supabase
     .from('appearances')
