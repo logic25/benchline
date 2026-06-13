@@ -34,3 +34,21 @@ UPDATE appearances
 CREATE INDEX idx_appearances_auto_release ON appearances(auto_release_at)
   WHERE auto_release_at IS NOT NULL;
 CREATE INDEX idx_appearances_payment_status ON appearances(payment_status);
+
+-- When a per diem submits their outcome report, start the 24h auto-release
+-- clock. The cron releases payment after this timestamp passes (unless the
+-- litigator releases manually or disputes first).
+CREATE OR REPLACE FUNCTION set_auto_release_on_report()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE appearances
+    SET auto_release_at = NOW() + INTERVAL '24 hours'
+    WHERE id = NEW.appearance_id
+    AND auto_release_at IS NULL;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER outcome_reports_set_auto_release
+  AFTER INSERT ON outcome_reports
+  FOR EACH ROW EXECUTE FUNCTION set_auto_release_on_report();

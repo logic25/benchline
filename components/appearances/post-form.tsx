@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BOROUGHS, CASE_TYPES, APPEARANCE_TYPES, NYC_COURTS, PAY_RATE_SUGGESTIONS, PLATFORM_FEE_RATE } from '@/lib/constants';
+import { BOROUGHS, CASE_TYPES, APPEARANCE_TYPES, NYC_COURTS, PAY_RATE_SUGGESTIONS } from '@/lib/constants';
+import { computePlatformFee } from '@/lib/pricing';
 import { AppearancePay } from '@/components/payment/appearance-pay';
 
 export function PostForm() {
@@ -32,8 +33,12 @@ export function PostForm() {
   const filteredCourts = NYC_COURTS.filter((c) => c.borough === borough);
   const suggestion = PAY_RATE_SUGGESTIONS.find((s) => s.type === appearanceType);
   const payRateCents = Math.round(parseFloat(payRate || '0') * 100);
-  const platformFee = Math.round(payRateCents * PLATFORM_FEE_RATE);
-  const totalCharge = payRateCents + platformFee;
+  // Display estimate only. The create-payment-intent route computes and stores
+  // the authoritative fee/tax server-side (flat-fee default per RPC 5.4).
+  const feeEstimate = computePlatformFee(payRateCents, caseType || 'civil', false);
+  const platformFee = feeEstimate.feeCents;
+  const salesTax = feeEstimate.salesTaxCents;
+  const totalCharge = feeEstimate.totalChargedCents;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,7 +65,6 @@ export function PostForm() {
           appearance_type: appearanceType,
           instructions,
           pay_rate: payRateCents,
-          platform_fee: platformFee,
           status: 'open',
         })
         .select()
@@ -179,8 +183,9 @@ export function PostForm() {
           {payRate && (
             <div className="bg-gray-50 p-4 rounded-md space-y-2 text-sm">
               <div className="flex justify-between"><span>Per diem receives</span><span className="font-medium">${(payRateCents / 100).toFixed(2)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Platform fee (15%)</span><span>${(platformFee / 100).toFixed(2)}</span></div>
-              <div className="border-t pt-2 flex justify-between font-semibold"><span>Total charge</span><span>${(totalCharge / 100).toFixed(2)}</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Platform fee</span><span>${(platformFee / 100).toFixed(2)}</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Sales tax (8.875%, not yet collected)</span><span>${(salesTax / 100).toFixed(2)}</span></div>
+              <div className="border-t pt-2 flex justify-between font-semibold"><span>Estimated total charge</span><span>${(totalCharge / 100).toFixed(2)}</span></div>
             </div>
           )}
         </CardContent>

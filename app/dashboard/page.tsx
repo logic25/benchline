@@ -39,7 +39,7 @@ export default function DashboardPage() {
   const stats = {
     active: active.length,
     completed: completed.length,
-    totalSpent: completed.filter(a => a.posted_by === profile?.id).reduce((sum, a) => sum + a.pay_rate + a.platform_fee, 0),
+    totalSpent: completed.filter(a => a.posted_by === profile?.id).reduce((sum, a) => sum + (a.total_charged_cents ?? a.pay_rate + a.platform_fee_cents + a.sales_tax_cents), 0),
     totalEarned: completed.filter(a => a.claimed_by === profile?.id).reduce((sum, a) => sum + a.pay_rate, 0),
     pending: open.length,
   };

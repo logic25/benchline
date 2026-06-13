@@ -280,7 +280,7 @@ export default function AppearanceDetailPage() {
             <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-700">${(appearance.pay_rate / 100).toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground mt-1">+${(appearance.platform_fee / 100).toFixed(2)} platform fee (total charged ${((appearance.pay_rate + appearance.platform_fee) / 100).toFixed(2)})</p>
+              <p className="text-xs text-muted-foreground mt-1">+${(appearance.platform_fee_cents / 100).toFixed(2)} platform fee{appearance.sales_tax_cents > 0 ? ` + $${(appearance.sales_tax_cents / 100).toFixed(2)} tax` : ''} (total charged ${(((appearance.total_charged_cents ?? appearance.pay_rate + appearance.platform_fee_cents + appearance.sales_tax_cents)) / 100).toFixed(2)})</p>
               {isOwner && !appearance.stripe_payment_intent_id && (
                 <p className="text-xs text-amber-700 mt-2">
                   No card payment on file for this post yet. Complete payment from the post flow when Stripe is configured.
