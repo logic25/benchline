@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { sendMessageSchema } from '@/lib/validation/schemas';
+import { sendForNotification } from '@/lib/email/send-for-notification';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
   // appearance is claimed; messaging an unclaimed appearance has no recipient.
   const { data: appearance } = await supabase
     .from('appearances')
-    .select('posted_by, claimed_by')
+    .select('posted_by, claimed_by, case_caption')
     .eq('id', appearanceId)
     .single();
   if (!appearance) return NextResponse.json({ error: 'Appearance not found' }, { status: 404 });
@@ -61,6 +62,13 @@ export async function POST(request: NextRequest) {
     payload: { message_id: message.id, attachment_count: attachments.length, has_body: text.length > 0 },
   });
   if (auditErr) console.error('audit_log insert:', auditErr.message);
+
+  await sendForNotification({
+    service,
+    recipientUserId: recipientId,
+    notificationType: 'message_received',
+    context: { appearanceId, caseCaption: appearance.case_caption },
+  });
 
   return NextResponse.json({ message });
 }

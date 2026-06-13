@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getStripe } from '@/lib/stripe/client';
 import { performTransition, TransitionError } from '@/lib/appearances/state-machine';
+import { sendForNotification } from '@/lib/email/send-for-notification';
 
 // Shared release logic used by the litigator-initiated release-payment route and
 // the auto-release cron.
@@ -103,6 +104,16 @@ export async function releaseAppearancePayment(
       title: 'Payment Released',
       body: `$${(appearance.pay_rate / 100).toFixed(2)} has been released to you.`,
       metadata: { appearance_id: appearanceId, auto: opts.auto },
+    });
+
+    await sendForNotification({
+      service: supabase,
+      recipientUserId: appearance.claimed_by,
+      notificationType: 'payment_released',
+      context: {
+        appearanceId,
+        body: `$${(appearance.pay_rate / 100).toFixed(2)} has been released to you.`,
+      },
     });
   }
 

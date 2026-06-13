@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { verificationReviewSchema } from '@/lib/validation/schemas';
+import { sendForNotification } from '@/lib/email/send-for-notification';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -110,6 +111,18 @@ async function notify(
     metadata: { kind, decision },
   });
   if (error) console.error('notifications insert:', error.message);
+
+  await sendForNotification({
+    service,
+    recipientUserId: userId,
+    emailKey: decision === 'approve' ? 'verification_approved' : 'verification_rejected',
+    context: {
+      body:
+        decision === 'approve'
+          ? `Your ${label.toLowerCase()} has been approved.`
+          : `Your ${label.toLowerCase()} was not approved. Please review and resubmit.`,
+    },
+  });
 }
 
 async function audit(

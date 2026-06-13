@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { performTransition, TransitionError } from '@/lib/appearances/state-machine';
 import { checkInSchema } from '@/lib/validation/schemas';
+import { sendForNotification } from '@/lib/email/send-for-notification';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -46,6 +47,13 @@ export async function POST(request: NextRequest) {
     metadata: { appearance_id: appearanceId },
   });
   if (nErr) console.error('notifications insert:', nErr);
+
+  await sendForNotification({
+    service,
+    recipientUserId: appearance.posted_by,
+    notificationType: 'check_in',
+    context: { appearanceId, caseCaption: appearance.case_caption },
+  });
 
   return NextResponse.json({ success: true });
 }
