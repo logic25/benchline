@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { STATUS_COLORS } from '@/lib/constants';
-import { MapPin, Calendar, Gavel, FileText, Star, CalendarPlus } from 'lucide-react';
+import { MapPin, Calendar, Gavel, FileText, Star, CalendarPlus, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Appearance, Profile, OutcomeReport, Review } from '@/lib/types';
 import Link from 'next/link';
@@ -223,7 +223,16 @@ export default function AppearanceDetailPage() {
 
           {report && (
             <Card>
-              <CardHeader><CardTitle>Outcome Report</CardTitle></CardHeader>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Outcome Report</CardTitle>
+                  <a href={`/api/reports/${report.id}/pdf`} className="shrink-0">
+                    <Button variant="outline" size="sm">
+                      <Download className="mr-2 h-4 w-4" />Download branded PDF
+                    </Button>
+                  </a>
+                </div>
+              </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-4">
                   <div><p className="text-xs text-muted-foreground">Outcome</p><p className="text-sm font-medium capitalize">{report.outcome}</p></div>
