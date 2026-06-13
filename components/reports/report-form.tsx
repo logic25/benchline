@@ -69,15 +69,14 @@ export function ReportForm({ appearanceId }: ReportFormProps) {
       }
 
       try {
-        const res = await fetch('/api/reports/structure', {
+        // The route redacts, calls Bedrock, re-stitches, and stores the
+        // structured report + redaction dictionary server-side under the
+        // service role. We only trigger it here.
+        await fetch('/api/reports/structure', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rawNotes, context: { judgeName, outcome, actionItems, judgeNotes } }),
+          body: JSON.stringify({ appearanceId, rawNotes, context: { judgeName, outcome, actionItems, judgeNotes } }),
         });
-        if (res.ok) {
-          const structured = await res.json();
-          await supabase.from('outcome_reports').update({ ai_structured_report: structured }).eq('appearance_id', appearanceId).eq('submitted_by', user.id);
-        }
       } catch {
         // AI structuring is non-critical
       }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import type { Profile } from '@/lib/types';
-import { LayoutDashboard, PlusCircle, Search, FileText, DollarSign, Settings, LogOut, Gavel } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Search, FileText, DollarSign, Settings, LogOut, Gavel, ShieldCheck } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { NotificationsMenu } from '@/components/layout/notifications-menu';
 
@@ -21,6 +21,7 @@ export function Sidebar({ profile }: SidebarProps) {
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/post', label: 'Post Appearance', icon: PlusCircle },
     { href: '/appearances', label: 'My Appearances', icon: FileText },
+    { href: '/verify', label: 'Verification', icon: ShieldCheck },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
@@ -29,6 +30,7 @@ export function Sidebar({ profile }: SidebarProps) {
     { href: '/browse', label: 'Browse Appearances', icon: Search },
     { href: '/appearances', label: 'My Appearances', icon: FileText },
     { href: '/earnings', label: 'Earnings', icon: DollarSign },
+    { href: '/verify', label: 'Verification', icon: ShieldCheck },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
@@ -38,10 +40,14 @@ export function Sidebar({ profile }: SidebarProps) {
     { href: '/browse', label: 'Browse Appearances', icon: Search },
     { href: '/appearances', label: 'My Appearances', icon: FileText },
     { href: '/earnings', label: 'Earnings', icon: DollarSign },
+    { href: '/verify', label: 'Verification', icon: ShieldCheck },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
-  const links = role === 'litigator' ? litigatorLinks : role === 'per_diem' ? perDiemLinks : bothLinks;
+  const baseLinks = role === 'litigator' ? litigatorLinks : role === 'per_diem' ? perDiemLinks : bothLinks;
+  const links = profile?.is_admin
+    ? [...baseLinks, { href: '/admin/verifications', label: 'Admin Review', icon: ShieldCheck }]
+    : baseLinks;
 
   async function handleSignOut() {
     await supabase.auth.signOut();

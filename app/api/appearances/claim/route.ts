@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { performTransition, TransitionError } from '@/lib/appearances/state-machine';
+import { hasConflict } from '@/lib/conflict/check';
 import { claimSchema } from '@/lib/validation/schemas';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -16,6 +17,26 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // The state machine runs under the service role (bypasses RLS), so the
+  // verification gate must be enforced here in code, not only via RLS.
+  const { data: claimer } = await supabase
+    .from('profiles')
+    .select('bar_verification_status, insurance_status')
+    .eq('id', user.id)
+    .single();
+  if (claimer?.bar_verification_status !== 'verified') {
+    return NextResponse.json(
+      { error: 'You must complete bar verification before claiming appearances.' },
+      { status: 403 }
+    );
+  }
+  if (claimer?.insurance_status !== 'verified') {
+    return NextResponse.json(
+      { error: 'You must have verified malpractice insurance on file before claiming appearances.' },
+      { status: 403 }
+    );
+  }
+
   // Pre-flight ownership/eligibility checks against the open row.
   const { data: appearance } = await supabase
     .from('appearances')
@@ -29,6 +50,23 @@ export async function POST(request: NextRequest) {
   }
 
   const service = createServiceClient();
+
+  // Conflict-of-interest gate, before any state change.
+  const conflict = await hasConflict(service, user.id, appearanceId);
+  if (conflict.conflict) {
+    const { error: auditErr } = await service.from('audit_log').insert({
+      appearance_id: appearanceId,
+      actor_user_id: user.id,
+      event_type: 'conflict.blocked',
+      payload: { reason: conflict.reason ?? 'conflict of interest' },
+    });
+    if (auditErr) console.error('audit_log insert:', auditErr.message);
+    return NextResponse.json(
+      { error: conflict.reason ?? 'A conflict of interest prevents you from claiming this appearance.' },
+      { status: 403 }
+    );
+  }
+
   try {
     await performTransition(service, appearanceId, 'claim', user.id, {
       auditEventType: 'appearance.claimed',

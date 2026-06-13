@@ -10,7 +10,73 @@ export type AppearanceStatus = 'open' | 'claimed' | 'in_progress' | 'completed' 
 
 export type OutcomeType = 'adjourned' | 'settled' | 'dismissed' | 'granted' | 'denied' | 'default' | 'other';
 
-export type NotificationType = 'appearance_posted' | 'appearance_claimed' | 'check_in' | 'report_submitted' | 'payment_released' | 'review_received';
+export type NotificationType =
+  | 'appearance_posted'
+  | 'appearance_claimed'
+  | 'check_in'
+  | 'report_submitted'
+  | 'payment_released'
+  | 'review_received'
+  | 'verification_reviewed'
+  | 'insurance_expiring'
+  | 'insurance_expired';
+
+export type PaymentStatus = 'pending' | 'authorized' | 'captured' | 'released' | 'refunded' | 'disputed' | 'failed';
+
+export type FeeModel = 'flat' | 'percentage';
+
+export type PayoutStatus = 'pending' | 'in_transit' | 'paid' | 'failed' | 'canceled';
+
+export type BarVerificationStatus = 'unverified' | 'pending' | 'verified' | 'rejected' | 'expired';
+
+export type BarVerificationMethod = 'manual' | 'oca_lookup' | 'persona' | 'stripe_identity';
+
+export type VerificationRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export type InsuranceStatus = 'none' | 'pending' | 'verified' | 'expired';
+
+export interface BarVerificationRequest {
+  id: string;
+  user_id: string;
+  bar_number: string;
+  bar_state: string;
+  full_name_legal: string;
+  evidence_url: string | null;
+  status: VerificationRequestStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_notes: string | null;
+  created_at: string;
+  updated_at: string;
+  user?: Profile;
+}
+
+export interface InsuranceUpload {
+  id: string;
+  user_id: string;
+  document_url: string | null;
+  carrier: string | null;
+  policy_number: string | null;
+  coverage_amount_cents: number | null;
+  effective_date: string | null;
+  expires_date: string | null;
+  status: VerificationRequestStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_notes: string | null;
+  created_at: string;
+  user?: Profile;
+}
+
+export interface ConflictDeclaration {
+  id: string;
+  user_id: string;
+  conflicted_party_name: string;
+  conflicted_party_firm: string | null;
+  conflicted_party_bar_number: string | null;
+  reason: string | null;
+  created_at: string;
+}
 
 export type PaymentStatus = 'pending' | 'authorized' | 'captured' | 'released' | 'refunded' | 'disputed' | 'failed';
 
@@ -27,6 +93,21 @@ export interface Profile {
   bar_number: string | null;
   bar_state: string | null;
   bar_verified: boolean;
+  is_admin: boolean;
+  bar_verification_status: BarVerificationStatus;
+  bar_verified_at: string | null;
+  bar_verification_method: BarVerificationMethod | null;
+  bar_verification_notes: string | null;
+  bar_expires_at: string | null;
+  insurance_status: InsuranceStatus;
+  insurance_verified_at: string | null;
+  insurance_expires_at: string | null;
+  insurance_carrier: string | null;
+  insurance_policy_number: string | null;
+  insurance_coverage_amount_cents: number | null;
+  firm_name: string | null;
+  firm_bar_numbers: string[];
+  ai_processing_consent: boolean;
   practice_areas: string[];
   courts_familiar: string[];
   bio: string | null;
@@ -53,6 +134,9 @@ export interface Appearance {
   case_caption: string;
   case_index_number: string;
   appearance_type: AppearanceType;
+  opposing_counsel_name: string | null;
+  opposing_counsel_firm: string | null;
+  opposing_counsel_bar_number: string | null;
   instructions: string;
   pay_rate: number;
   payment_status: PaymentStatus;
@@ -112,6 +196,7 @@ export interface OutcomeReport {
   red_flags: string;
   raw_notes: string;
   ai_structured_report: Record<string, unknown> | null;
+  ai_redaction_dictionary: Record<string, string> | null;
   created_at: string;
 }
 
