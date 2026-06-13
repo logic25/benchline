@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import type { Appearance, Profile, OutcomeReport, Review } from '@/lib/types';
 import Link from 'next/link';
 import { StructuredReportView } from '@/components/reports/structured-report';
+import { MessageThread } from '@/components/appearances/message-thread';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -238,6 +239,9 @@ export default function AppearanceDetailPage() {
           )}
           {report?.ai_structured_report && (
             <StructuredReportView data={report.ai_structured_report as Record<string, unknown>} />
+          )}
+          {currentUser && appearance.claimed_by && (isOwner || isClaimer) && (
+            <MessageThread appearanceId={appearance.id} currentUserId={currentUser.id} />
           )}
           {isOwner && appearance.status === 'completed' && claimer && (
             <Card>

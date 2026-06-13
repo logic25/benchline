@@ -19,7 +19,8 @@ export type NotificationType =
   | 'review_received'
   | 'verification_reviewed'
   | 'insurance_expiring'
-  | 'insurance_expired';
+  | 'insurance_expired'
+  | 'message_received';
 
 export type PaymentStatus = 'pending' | 'authorized' | 'captured' | 'released' | 'refunded' | 'disputed' | 'failed';
 
@@ -214,4 +215,22 @@ export interface Notification {
   read: boolean;
   metadata: Record<string, unknown>;
   created_at: string;
+}
+
+export interface MessageAttachment {
+  path: string;
+  name: string;
+  size: number;
+  content_type: string;
+}
+
+export interface Message {
+  id: string;
+  appearance_id: string;
+  sender_id: string;
+  body: string;
+  attachments: MessageAttachment[];
+  read_at: string | null;
+  created_at: string;
+  sender?: Profile;
 }

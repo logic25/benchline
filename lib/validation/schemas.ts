@@ -56,6 +56,24 @@ export const structureReportSchema = z.object({
 });
 export type StructureReportInput = z.infer<typeof structureReportSchema>;
 
+export const messageAttachmentSchema = z.object({
+  path: z.string().trim().min(1).max(1000),
+  name: z.string().trim().min(1).max(300),
+  size: z.number().int().nonnegative(),
+  content_type: z.string().trim().min(1).max(200),
+});
+
+export const sendMessageSchema = z
+  .object({
+    appearanceId: z.string().uuid(),
+    body: z.string().trim().max(10000).default(''),
+    attachments: z.array(messageAttachmentSchema).max(10).default([]),
+  })
+  .refine((v) => v.body.length > 0 || v.attachments.length > 0, {
+    message: 'A message must have text or at least one attachment',
+  });
+export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
 export const instantPayoutSchema = z.object({
   // Optional explicit amount (cents) to withdraw; defaults to full available
   // balance when omitted.
