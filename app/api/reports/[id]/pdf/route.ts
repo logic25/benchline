@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateReportPDF } from '@/lib/reports/pdf';
+import { rateLimitGuard } from '@/lib/api/guard';
 
 // GET /api/reports/{id}/pdf — branded PDF of an outcome report. {id} is the
 // outcome_reports id. Authorized to involved parties (RLS on outcome_reports
@@ -11,6 +12,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('read', user.id);
+  if (blocked) return blocked;
 
   const { data: report } = await supabase.from('outcome_reports').select('*').eq('id', id).single();
   if (!report) return NextResponse.json({ error: 'Not found' }, { status: 404 });

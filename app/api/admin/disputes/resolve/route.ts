@@ -4,6 +4,7 @@ import { getStripe } from '@/lib/stripe/client';
 import { performTransition, TransitionError, type TransitionEvent } from '@/lib/appearances/state-machine';
 import { resolveDisputeSchema } from '@/lib/validation/schemas';
 import { sendForNotification } from '@/lib/email/send-for-notification';
+import { rateLimitGuard } from '@/lib/api/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import type { DisputeStatus } from '@/lib/types';
 
@@ -30,6 +31,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   const { data: me } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
   if (!me?.is_admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

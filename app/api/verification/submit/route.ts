@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { barVerificationSubmitSchema } from '@/lib/validation/schemas';
 import { lookupAttorney } from '@/lib/verification/oca-lookup';
+import { rateLimitGuard } from '@/lib/api/guard';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -15,6 +16,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   // Phase 2: always 'manual'; Phase 3 may auto-approve from OCA.
   const lookup = await lookupAttorney(barNumber, barState);

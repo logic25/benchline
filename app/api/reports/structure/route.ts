@@ -6,6 +6,7 @@ import { invokeClaude } from '@/lib/ai/bedrock-client';
 import { redact, restoreDeep } from '@/lib/ai/redact';
 import { structureReportSchema } from '@/lib/validation/schemas';
 import { sendForNotification } from '@/lib/email/send-for-notification';
+import { rateLimitGuard } from '@/lib/api/guard';
 
 // Expected shape of the model's structured output. We Zod-validate it; on
 // failure we record the error in the audit log and fall back to the raw notes.
@@ -51,6 +52,10 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // AI structuring is expensive — limit to 10/hour per user.
+  const blocked = await rateLimitGuard('ai', user.id);
+  if (blocked) return blocked;
 
   // Email the poster that a report was submitted. This runs regardless of AI
   // consent/config below, and never blocks the response.

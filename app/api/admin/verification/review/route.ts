@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { verificationReviewSchema } from '@/lib/validation/schemas';
 import { sendForNotification } from '@/lib/email/send-for-notification';
+import { rateLimitGuard } from '@/lib/api/guard';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -15,6 +16,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   // Admin gate: read the caller's own profile (RLS lets users read profiles).
   const { data: me } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();

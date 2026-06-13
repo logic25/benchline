@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { getStripe } from '@/lib/stripe/client';
 import { log } from '@/lib/log';
+import { rateLimitGuard } from '@/lib/api/guard';
 
 // Admin power actions on an appearance. These are deliberate overrides that may
 // move an appearance outside the normal lifecycle (e.g. cancelling a stuck row),
@@ -29,6 +30,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   const { data: me } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
   if (!me?.is_admin) {

@@ -3,6 +3,7 @@ import { getStripe } from '@/lib/stripe/client';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { instantPayoutSchema } from '@/lib/validation/schemas';
+import { rateLimitGuard } from '@/lib/api/guard';
 
 // Stripe Instant Payouts fee is 1.5% of the payout amount (min $0.50 applied by
 // Stripe). We surface the fee to the user; the fee is deducted from the
@@ -52,6 +53,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -129,6 +133,9 @@ export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('read', user.id);
+  if (blocked) return blocked;
 
   const service = createServiceClient();
   const available = await computeAvailableCents(service, user.id);

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { sendSms, isSmsConfigured } from '@/lib/sms/client';
 import { phoneSendCodeSchema } from '@/lib/validation/schemas';
+import { rateLimitGuard, clientIp } from '@/lib/api/guard';
 
 const CODE_TTL_MS = 10 * 60 * 1000;
 
@@ -17,6 +18,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('auth', clientIp(request));
+  if (blocked) return blocked;
 
   if (!isSmsConfigured()) {
     return NextResponse.json({ error: 'SMS is not configured on this deployment.' }, { status: 503 });

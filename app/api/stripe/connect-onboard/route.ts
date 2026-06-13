@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe/client';
 import { createClient } from '@/lib/supabase/server';
+import { rateLimitGuard } from '@/lib/api/guard';
 
 export async function POST() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   try {
     const { data: profile } = await supabase.from('profiles').select('stripe_account_id').eq('id', user.id).single();

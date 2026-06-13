@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { phoneVerifyCodeSchema } from '@/lib/validation/schemas';
+import { rateLimitGuard, clientIp } from '@/lib/api/guard';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -14,6 +15,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('auth', clientIp(request));
+  if (blocked) return blocked;
 
   const service = createServiceClient();
 

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { sendForNotification } from '@/lib/email/send-for-notification';
 import { log } from '@/lib/log';
+import { rateLimitGuard } from '@/lib/api/guard';
 
 const schema = z.object({
   userId: z.string().uuid(),
@@ -21,6 +22,9 @@ export async function POST(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const blocked = await rateLimitGuard('mutation', user.id);
+  if (blocked) return blocked;
 
   const { data: me } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
   if (!me?.is_admin) return NextResponse.json({ error: 'Not found' }, { status: 404 });
