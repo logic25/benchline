@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { AppShell } from '@/components/layout/app-shell';
-import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,19 +13,12 @@ type DisputeRow = Dispute & { appearance?: Appearance };
 
 export default function AdminDisputesPage() {
   const supabase = createClient();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [disputes, setDisputes] = useState<DisputeRow[]>([]);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [splitAmount, setSplitAmount] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setIsAdmin(false); return; }
-    const { data: me } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
-    if (!me?.is_admin) { setIsAdmin(false); return; }
-    setIsAdmin(true);
-
     const { data } = await supabase
       .from('disputes')
       .select('*, appearance:appearances!disputes_appearance_id_fkey(id, case_caption, pay_rate, payment_status)')
@@ -71,12 +62,12 @@ export default function AdminDisputesPage() {
     }
   }
 
-  if (isAdmin === null) return <AppShell><div className="text-center py-12 text-muted-foreground">Loading…</div></AppShell>;
-  if (!isAdmin) return <AppShell><div className="text-center py-12 text-muted-foreground">Not authorized.</div></AppShell>;
-
   return (
-    <AppShell>
-      <Header title="Dispute Review" description="Resolve open disputes between litigators and per diems" />
+    <>
+      <div className="mb-6">
+        <h1 className="font-heading text-3xl tracking-[-0.02em]">Dispute Review</h1>
+        <p className="text-sm text-muted-foreground">Resolve open disputes between litigators and per diems.</p>
+      </div>
       <div className="space-y-4 max-w-3xl">
         {disputes.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6">No open disputes.</p>
@@ -136,6 +127,6 @@ export default function AdminDisputesPage() {
           </Card>
         ))}
       </div>
-    </AppShell>
+    </>
   );
 }
