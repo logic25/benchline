@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DollarSign, Zap } from 'lucide-react';
 import type { Appearance, Payout } from '@/lib/types';
 import { format } from 'date-fns';
+import { InsuranceReferralCard } from '@/components/insurance/referral-card';
 
 export default function EarningsPage() {
   const [appearances, setAppearances] = useState<Appearance[]>([]);
@@ -96,6 +97,10 @@ export default function EarningsPage() {
           {payoutError && <p className="text-sm text-destructive mt-3">{payoutError}</p>}
         </CardContent>
       </Card>
+
+      <div className="mb-8">
+        <InsuranceReferralCard source="earnings" />
+      </div>
 
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Loading...</div>

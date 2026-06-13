@@ -19,7 +19,9 @@ export type NotificationType =
   | 'review_received'
   | 'verification_reviewed'
   | 'insurance_expiring'
-  | 'insurance_expired';
+  | 'insurance_expired'
+  | 'message_received'
+  | 'dispute_update';
 
 export type PaymentStatus = 'pending' | 'authorized' | 'captured' | 'released' | 'refunded' | 'disputed' | 'failed';
 
@@ -78,17 +80,13 @@ export interface ConflictDeclaration {
   created_at: string;
 }
 
-export type PaymentStatus = 'pending' | 'authorized' | 'captured' | 'released' | 'refunded' | 'disputed' | 'failed';
-
-export type FeeModel = 'flat' | 'percentage';
-
-export type PayoutStatus = 'pending' | 'in_transit' | 'paid' | 'failed' | 'canceled';
-
 export interface Profile {
   id: string;
   email: string;
   full_name: string;
   phone: string | null;
+  phone_verified: boolean;
+  phone_verified_at: string | null;
   role: UserRole;
   bar_number: string | null;
   bar_state: string | null;
@@ -220,4 +218,55 @@ export interface Notification {
   read: boolean;
   metadata: Record<string, unknown>;
   created_at: string;
+}
+
+export interface ReferralClick {
+  id: string;
+  user_id: string | null;
+  partner: string;
+  source: string | null;
+  created_at: string;
+}
+
+export type DisputeStatus =
+  | 'open'
+  | 'in_review'
+  | 'resolved_for_raiser'
+  | 'resolved_for_other'
+  | 'split';
+
+export interface Dispute {
+  id: string;
+  appearance_id: string;
+  raised_by: string;
+  against: string;
+  reason: string;
+  evidence_urls: string[];
+  status: DisputeStatus;
+  resolution_notes: string | null;
+  refund_amount_cents: number | null;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  created_at: string;
+  updated_at: string;
+  appearance?: Appearance;
+  raiser?: Profile;
+}
+
+export interface MessageAttachment {
+  path: string;
+  name: string;
+  size: number;
+  content_type: string;
+}
+
+export interface Message {
+  id: string;
+  appearance_id: string;
+  sender_id: string;
+  body: string;
+  attachments: MessageAttachment[];
+  read_at: string | null;
+  created_at: string;
+  sender?: Profile;
 }

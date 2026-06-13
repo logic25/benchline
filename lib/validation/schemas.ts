@@ -56,6 +56,57 @@ export const structureReportSchema = z.object({
 });
 export type StructureReportInput = z.infer<typeof structureReportSchema>;
 
+export const messageAttachmentSchema = z.object({
+  path: z.string().trim().min(1).max(1000),
+  name: z.string().trim().min(1).max(300),
+  size: z.number().int().nonnegative(),
+  content_type: z.string().trim().min(1).max(200),
+});
+
+export const sendMessageSchema = z
+  .object({
+    appearanceId: z.string().uuid(),
+    body: z.string().trim().max(10000).default(''),
+    attachments: z.array(messageAttachmentSchema).max(10).default([]),
+  })
+  .refine((v) => v.body.length > 0 || v.attachments.length > 0, {
+    message: 'A message must have text or at least one attachment',
+  });
+export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
+// E.164-ish phone number (a leading + and 7-15 digits).
+export const phoneSendCodeSchema = z.object({
+  phone: z.string().trim().regex(/^\+[1-9]\d{6,14}$/, 'Enter a phone number in international format, e.g. +12125550100'),
+});
+export type PhoneSendCodeInput = z.infer<typeof phoneSendCodeSchema>;
+
+export const phoneVerifyCodeSchema = z.object({
+  code: z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit code'),
+});
+export type PhoneVerifyCodeInput = z.infer<typeof phoneVerifyCodeSchema>;
+
+export const raiseDisputeSchema = z.object({
+  appearanceId: z.string().uuid(),
+  reason: z.string().trim().min(10).max(5000),
+  evidenceUrls: z.array(z.string().trim().min(1).max(1000)).max(10).default([]),
+});
+export type RaiseDisputeInput = z.infer<typeof raiseDisputeSchema>;
+
+export const resolveDisputeSchema = z
+  .object({
+    disputeId: z.string().uuid(),
+    decision: z.enum(['for_raiser', 'for_other', 'split']),
+    resolutionNotes: z.string().trim().max(5000).optional(),
+    // Required for split: the cents to refund the litigator; the remainder is
+    // released to the per diem.
+    refundAmountCents: z.number().int().nonnegative().optional(),
+  })
+  .refine((v) => v.decision !== 'split' || typeof v.refundAmountCents === 'number', {
+    message: 'A split resolution requires a refund amount',
+    path: ['refundAmountCents'],
+  });
+export type ResolveDisputeInput = z.infer<typeof resolveDisputeSchema>;
+
 export const instantPayoutSchema = z.object({
   // Optional explicit amount (cents) to withdraw; defaults to full available
   // balance when omitted.

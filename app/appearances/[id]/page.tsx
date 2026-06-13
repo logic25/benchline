@@ -10,11 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { STATUS_COLORS } from '@/lib/constants';
-import { MapPin, Calendar, Gavel, FileText, Star } from 'lucide-react';
+import { MapPin, Calendar, Gavel, FileText, Star, CalendarPlus, Download, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Appearance, Profile, OutcomeReport, Review } from '@/lib/types';
 import Link from 'next/link';
 import { StructuredReportView } from '@/components/reports/structured-report';
+import { MessageThread } from '@/components/appearances/message-thread';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -222,7 +223,16 @@ export default function AppearanceDetailPage() {
 
           {report && (
             <Card>
-              <CardHeader><CardTitle>Outcome Report</CardTitle></CardHeader>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Outcome Report</CardTitle>
+                  <a href={`/api/reports/${report.id}/pdf`} className="shrink-0">
+                    <Button variant="outline" size="sm">
+                      <Download className="mr-2 h-4 w-4" />Download branded PDF
+                    </Button>
+                  </a>
+                </div>
+              </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-4">
                   <div><p className="text-xs text-muted-foreground">Outcome</p><p className="text-sm font-medium capitalize">{report.outcome}</p></div>
@@ -238,6 +248,9 @@ export default function AppearanceDetailPage() {
           )}
           {report?.ai_structured_report && (
             <StructuredReportView data={report.ai_structured_report as Record<string, unknown>} />
+          )}
+          {currentUser && appearance.claimed_by && (isOwner || isClaimer) && (
+            <MessageThread appearanceId={appearance.id} currentUserId={currentUser.id} />
           )}
           {isOwner && appearance.status === 'completed' && claimer && (
             <Card>
@@ -347,6 +360,20 @@ export default function AppearanceDetailPage() {
               </Button>
             )}
             {isOwner && appearance.status === 'open' && <Button variant="outline" className="w-full" onClick={handleCancel}>Cancel Appearance</Button>}
+            {(isOwner || isClaimer) && appearance.status !== 'cancelled' && (
+              <a href={`/api/appearances/${appearance.id}/calendar.ics`} className="block">
+                <Button variant="outline" className="w-full">
+                  <CalendarPlus className="mr-2 h-4 w-4" />Add to calendar
+                </Button>
+              </a>
+            )}
+            {(isOwner || isClaimer) && appearance.claimed_by && ['in_progress', 'completed'].includes(appearance.status) && (
+              <Link href={`/appearances/${appearance.id}/dispute`} className="block">
+                <Button variant="ghost" className="w-full text-destructive hover:text-destructive">
+                  <AlertTriangle className="mr-2 h-4 w-4" />Raise a dispute
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

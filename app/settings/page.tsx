@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { ConflictDeclaration, Profile, UserRole } from '@/lib/types';
+import { PhoneVerificationCard } from '@/components/settings/phone-verification-card';
 import { toast } from 'sonner';
 
 function linesToArray(s: string): string[] {
@@ -166,6 +167,11 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <PhoneVerificationCard
+          initialPhone={profile?.phone || ''}
+          initialVerified={profile?.phone_verified ?? false}
+        />
 
         <Card>
           <CardHeader>

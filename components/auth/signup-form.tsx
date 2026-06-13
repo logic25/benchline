@@ -50,6 +50,9 @@ export function SignupForm({ variant = 'default' }: { variant?: 'default' | 'onD
         bar_number: barNumber || null,
         full_name: fullName,
       }).eq('id', user.id);
+
+      // Fire-and-forget welcome email; never block account creation on it.
+      fetch('/api/email/welcome', { method: 'POST' }).catch(() => {});
     }
 
     setLoading(false);
