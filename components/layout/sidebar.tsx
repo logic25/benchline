@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import type { Profile } from '@/lib/types';
-import { LayoutDashboard, PlusCircle, Search, FileText, DollarSign, Settings, LogOut, Gavel, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Search, FileText, DollarSign, Settings, LogOut, Gavel, ShieldCheck, Scale } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { NotificationsMenu } from '@/components/layout/notifications-menu';
 
@@ -46,7 +46,11 @@ export function Sidebar({ profile }: SidebarProps) {
 
   const baseLinks = role === 'litigator' ? litigatorLinks : role === 'per_diem' ? perDiemLinks : bothLinks;
   const links = profile?.is_admin
-    ? [...baseLinks, { href: '/admin/verifications', label: 'Admin Review', icon: ShieldCheck }]
+    ? [
+        ...baseLinks,
+        { href: '/admin/verifications', label: 'Admin Review', icon: ShieldCheck },
+        { href: '/admin/disputes', label: 'Disputes', icon: Scale },
+      ]
     : baseLinks;
 
   async function handleSignOut() {

@@ -20,7 +20,8 @@ export type NotificationType =
   | 'verification_reviewed'
   | 'insurance_expiring'
   | 'insurance_expired'
-  | 'message_received';
+  | 'message_received'
+  | 'dispute_update';
 
 export type PaymentStatus = 'pending' | 'authorized' | 'captured' | 'released' | 'refunded' | 'disputed' | 'failed';
 
@@ -217,6 +218,31 @@ export interface Notification {
   read: boolean;
   metadata: Record<string, unknown>;
   created_at: string;
+}
+
+export type DisputeStatus =
+  | 'open'
+  | 'in_review'
+  | 'resolved_for_raiser'
+  | 'resolved_for_other'
+  | 'split';
+
+export interface Dispute {
+  id: string;
+  appearance_id: string;
+  raised_by: string;
+  against: string;
+  reason: string;
+  evidence_urls: string[];
+  status: DisputeStatus;
+  resolution_notes: string | null;
+  refund_amount_cents: number | null;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  created_at: string;
+  updated_at: string;
+  appearance?: Appearance;
+  raiser?: Profile;
 }
 
 export interface MessageAttachment {

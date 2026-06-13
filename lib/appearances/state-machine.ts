@@ -15,7 +15,15 @@ export type TransitionEvent =
   | 'cancel'
   | 'dispute'
   | 'resolve_dispute'
-  | 'refund';
+  | 'refund'
+  // Phase 3 dispute workflow. raise_dispute is the user-facing entry point
+  // (a party opens a formal dispute); the resolve_* events are admin-only
+  // outcomes. These coexist with the older generic dispute/resolve_dispute/
+  // refund events above.
+  | 'raise_dispute'
+  | 'resolve_dispute_for_raiser'
+  | 'resolve_dispute_for_other'
+  | 'resolve_dispute_split';
 
 // from-status -> event -> to-status. submit_report is modeled as a no-op on
 // status (it does not move the appearance out of in_progress) but is recorded
@@ -35,9 +43,14 @@ const TRANSITIONS: Record<AppearanceStatus, Partial<Record<TransitionEvent, Appe
     confirm_completion: 'completed',
     auto_release: 'completed',
     dispute: 'disputed',
+    raise_dispute: 'disputed',
   },
   completed: {
     dispute: 'disputed',
+    // A completed appearance may be disputed within a window (enforced by the
+    // dispute route, which checks completed_at), e.g. if payment already
+    // auto-released but the work was deficient.
+    raise_dispute: 'disputed',
   },
   disputed: {
     resolve_dispute: 'completed',
@@ -45,6 +58,11 @@ const TRANSITIONS: Record<AppearanceStatus, Partial<Record<TransitionEvent, Appe
     // side of "refunded" lives on appearances.payment_status, not the
     // appearance_status enum (which has no 'refunded' member).
     refund: 'cancelled',
+    // Admin resolutions. For-raiser refunds the litigator (cancelled);
+    // for-other and split release/transfer to the per diem (completed).
+    resolve_dispute_for_raiser: 'cancelled',
+    resolve_dispute_for_other: 'completed',
+    resolve_dispute_split: 'completed',
   },
   cancelled: {},
 };

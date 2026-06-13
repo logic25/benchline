@@ -13,6 +13,7 @@ const NOTIFICATION_TO_EMAIL: Record<string, EmailKey> = {
   review_received: 'review_received',
   insurance_expiring: 'insurance_expiring',
   message_received: 'message_received',
+  dispute_update: 'dispute_update',
 };
 
 interface SendArgs {

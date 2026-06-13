@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { STATUS_COLORS } from '@/lib/constants';
-import { MapPin, Calendar, Gavel, FileText, Star, CalendarPlus, Download } from 'lucide-react';
+import { MapPin, Calendar, Gavel, FileText, Star, CalendarPlus, Download, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Appearance, Profile, OutcomeReport, Review } from '@/lib/types';
 import Link from 'next/link';
@@ -366,6 +366,13 @@ export default function AppearanceDetailPage() {
                   <CalendarPlus className="mr-2 h-4 w-4" />Add to calendar
                 </Button>
               </a>
+            )}
+            {(isOwner || isClaimer) && appearance.claimed_by && ['in_progress', 'completed'].includes(appearance.status) && (
+              <Link href={`/appearances/${appearance.id}/dispute`} className="block">
+                <Button variant="ghost" className="w-full text-destructive hover:text-destructive">
+                  <AlertTriangle className="mr-2 h-4 w-4" />Raise a dispute
+                </Button>
+              </Link>
             )}
           </div>
         </div>

@@ -85,6 +85,28 @@ export const phoneVerifyCodeSchema = z.object({
 });
 export type PhoneVerifyCodeInput = z.infer<typeof phoneVerifyCodeSchema>;
 
+export const raiseDisputeSchema = z.object({
+  appearanceId: z.string().uuid(),
+  reason: z.string().trim().min(10).max(5000),
+  evidenceUrls: z.array(z.string().trim().min(1).max(1000)).max(10).default([]),
+});
+export type RaiseDisputeInput = z.infer<typeof raiseDisputeSchema>;
+
+export const resolveDisputeSchema = z
+  .object({
+    disputeId: z.string().uuid(),
+    decision: z.enum(['for_raiser', 'for_other', 'split']),
+    resolutionNotes: z.string().trim().max(5000).optional(),
+    // Required for split: the cents to refund the litigator; the remainder is
+    // released to the per diem.
+    refundAmountCents: z.number().int().nonnegative().optional(),
+  })
+  .refine((v) => v.decision !== 'split' || typeof v.refundAmountCents === 'number', {
+    message: 'A split resolution requires a refund amount',
+    path: ['refundAmountCents'],
+  });
+export type ResolveDisputeInput = z.infer<typeof resolveDisputeSchema>;
+
 export const instantPayoutSchema = z.object({
   // Optional explicit amount (cents) to withdraw; defaults to full available
   // balance when omitted.
