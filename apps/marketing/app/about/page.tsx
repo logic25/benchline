@@ -8,20 +8,20 @@ export const metadata = buildMetadata({
   title: "About",
   path: "/about",
   description:
-    "Benchline is built by a NYC software engineer and a NY-barred attorney — with a real phone number, a real address, and a compliance-first posture. Founder-funded.",
+    "Benchline is built by two NYC operators — with a real phone number, a real address, and a compliance-first posture. Founder-funded.",
 });
 
 const founders = [
   {
     name: "Manny Russell",
     role: "Co-founder · Engineering & product",
-    bio: "Software engineer based in New York. Builds the product, infrastructure, and security. Partners with a NY-barred attorney on every legal and compliance decision so the platform reflects how NYC litigation actually works.",
+    bio: "Software engineer based in New York. Builds the product, infrastructure, and security. Partners with a NY attorney on every legal and compliance decision so the platform reflects how NYC litigation actually works.",
     initials: "M",
   },
   {
     name: "[Co-founder Name]",
-    role: "Co-founder · NY-barred attorney",
-    bio: "Practicing NY litigator focused on [practice area], leading legal, compliance, and attorney experience. Believes per diem coverage should be verifiable, fast, and fair to both sides.",
+    role: "Co-founder · Legal & compliance",
+    bio: "NYC litigator leading legal, compliance, and attorney experience. Believes per diem coverage should be verifiable, fast, and fair to both sides.",
     initials: "C",
   },
 ];
@@ -37,10 +37,10 @@ export default function AboutPage() {
               Real founders. Real New York.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate md:text-xl">
-              Benchline is built by a NYC software engineer and a NY-barred attorney
-              who&rsquo;ve seen the per diem scramble up close. Our names, our phone
-              number, and our address are all on this site — because trust starts with
-              knowing exactly who you&rsquo;re dealing with.
+              Benchline is built by two NYC founders — a software engineer and a New
+              York attorney — who&rsquo;ve seen the per diem scramble up close. Our
+              names, our phone number, and our address are all on this site, because
+              trust starts with knowing exactly who you&rsquo;re dealing with.
             </p>
           </div>
         </div>
@@ -66,7 +66,7 @@ export default function AboutPage() {
             <p>
               So we built Benchline in New York, for New York, with the local rules and
               the real courthouses in mind. No placeholder phone number. No anonymous
-              founders. An engineer and a NY-barred attorney building the tool we wished
+              founders. An engineer and an attorney building the tool we wished
               existed.
             </p>
           </div>
@@ -89,8 +89,7 @@ export default function AboutPage() {
           ))}
         </div>
         <p className="mx-auto mt-6 max-w-3xl text-center text-xs text-slate-light">
-          Founder bios are placeholders pending final copy and headshots — names and
-          bar numbers will be public at launch.
+          Founder bios are placeholders pending final copy and headshots.
         </p>
       </Section>
 

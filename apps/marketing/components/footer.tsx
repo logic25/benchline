@@ -49,7 +49,7 @@ export function Footer() {
             </span>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-cream/65">
               Per diem court coverage for New York litigators and the attorneys who
-              cover for them. Built in NYC, by NY-barred attorneys.
+              cover for them. Built in NYC, by named operators.
             </p>
             <div className="mt-5 space-y-1 text-sm text-cream/65">
               <p>

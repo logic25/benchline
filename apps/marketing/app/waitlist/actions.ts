@@ -88,7 +88,7 @@ export async function joinWaitlist(
 
 We're building the NYC per diem attorney marketplace — verified attorneys on both sides, AI-structured outcome reports, and Stripe instant payouts.
 
-We'll reach out as we open access in your area. In the meantime, reply to this email with any questions — a real (NY-barred) person will answer.
+We'll reach out as we open access in your area. In the meantime, reply to this email with any questions — a real person from the team will answer.
 
 — The Benchline team
 hello@benchline.com`,

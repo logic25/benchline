@@ -54,7 +54,7 @@ const why = [
   {
     icon: MapPin,
     title: "NY-native, for real",
-    desc: "Founded by NY-barred attorneys, with a real New York phone number and address. We know the parts, the clerks, and the local rules.",
+    desc: "Founded in NYC by named operators with a real New York phone number and address. We know the parts, the clerks, and the local rules.",
   },
   {
     icon: ShieldCheck,

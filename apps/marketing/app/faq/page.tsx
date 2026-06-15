@@ -173,7 +173,7 @@ export default function FaqPage() {
 
       <CtaBand
         title="Still have a question?"
-        body="Email hello@benchline.com — a real person (a NY-barred one) will answer. Or join the waitlist to get started."
+        body="Email hello@benchline.com — a real person from the team will answer. Or join the waitlist to get started."
       />
     </>
   );
